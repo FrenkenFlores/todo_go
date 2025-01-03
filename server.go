@@ -10,9 +10,15 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func (s *Server) Run(port string) error {
+// The hander interface:
+// type Handler interface {
+//     ServeHTTP(ResponseWriter, *Request)
+// }
+
+func (s *Server) Run(port string, handler http.Handler) error {
 	s.httpServer = &http.Server{
 		Addr:           ":" + port,
+		Handler:        handler, // An interface that represents an HTTP handler that handle HTTP queries
 		MaxHeaderBytes: 1 << 20, // 1 MB
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
