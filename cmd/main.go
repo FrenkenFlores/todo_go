@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	todogo "github.com/FrenkenFlores/todo_go"
@@ -9,6 +8,7 @@ import (
 	"github.com/FrenkenFlores/todo_go/pkg/repository"
 	"github.com/FrenkenFlores/todo_go/pkg/service"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -19,11 +19,12 @@ func initConfig() error {
 }
 
 func main() {
+	logrus.SetFormatter(new(logrus.JSONFormatter))
 	if err := initConfig(); err != nil {
-		log.Fatalf("error occured durring initialization: %s", err.Error())
+		logrus.Fatalf("error occured durring initialization: %s", err.Error())
 	}
 	if err := godotenv.Load(); err != nil {
-		log.Fatalf("error occured while loading env: %s", err.Error())
+		logrus.Fatalf("error occured while loading env: %s", err.Error())
 	}
 	db, err := repository.NewDatabase(repository.Config{
 		Host:     viper.GetStringMapString("db")["host"],
@@ -34,7 +35,7 @@ func main() {
 		SslMode:  viper.GetStringMapString("db")["sslmode"],
 	})
 	if err != nil {
-		log.Fatalf("failed to initialize database: %s", err.Error())
+		logrus.Fatalf("failed to initialize database: %s", err.Error())
 	}
 	repos := repository.NewRepository(db)
 	services := service.NewService(repos)
@@ -42,6 +43,6 @@ func main() {
 	port := viper.GetString("port")
 	srv := new(todogo.Server)
 	if err := srv.Run(port, handlers.InitRoutes()); err != nil {
-		log.Fatalf("error occured while running server: %s", err.Error())
+		logrus.Fatalf("error occured while running server: %s", err.Error())
 	}
 }
